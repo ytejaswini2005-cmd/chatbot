@@ -1,0 +1,291 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Skin Condition Prediction - DermaAI</title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600&family=Playfair+Display:wght@700&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --primary: #8E9775;
+            --accent: #E28E8E;
+            --bg: #FAF9F6;
+            --text: #333;
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Inter', sans-serif;
+            background-color: var(--bg);
+            color: var(--text);
+        }
+
+        nav {
+            background: white;
+            padding: 1rem 10%;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.05);
+        }
+
+        .logo {
+            font-family: 'Playfair Display', serif;
+            font-size: 1.5rem;
+            color: var(--primary);
+            font-weight: bold;
+        }
+
+        .nav-links a {
+            margin-left: 20px;
+            text-decoration: none;
+            color: var(--text);
+            transition: color 0.3s;
+        }
+
+        .nav-links a:hover {
+            color: var(--primary);
+        }
+
+        .container {
+            padding: 60px 10%;
+            max-width: 1200px;
+            margin: 0 auto;
+        }
+
+        .prediction-card {
+            background: white;
+            padding: 40px;
+            border-radius: 20px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.05);
+        }
+
+        .upload-area {
+            border: 2px dashed #ccc;
+            border-radius: 10px;
+            padding: 40px;
+            text-align: center;
+            transition: border-color 0.3s;
+            cursor: pointer;
+            margin-bottom: 20px;
+        }
+
+        .upload-area:hover {
+            border-color: var(--primary);
+        }
+
+        .upload-area input {
+            display: none;
+        }
+
+        .preview-image {
+            max-width: 300px;
+            margin: 20px auto;
+            display: block;
+            border-radius: 10px;
+        }
+
+        .btn {
+            background-color: var(--primary);
+            color: white;
+            padding: 12px 30px;
+            border: none;
+            border-radius: 50px;
+            font-size: 16px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s;
+        }
+
+        .btn:hover {
+            background-color: #6d7559;
+            transform: translateY(-2px);
+        }
+
+        .result {
+            margin-top: 30px;
+            padding: 20px;
+            background: #f9f9f9;
+            border-radius: 10px;
+        }
+
+        .condition-badge {
+            display: inline-block;
+            padding: 10px 20px;
+            background: var(--accent);
+            color: white;
+            border-radius: 50px;
+            font-size: 1.2rem;
+            margin: 10px 0;
+        }
+
+        .button-group {
+            display: flex;
+            gap: 15px;
+            justify-content: center;
+            margin: 30px 0;
+            flex-wrap: wrap;
+        }
+
+        .action-btn {
+            background-color: var(--primary);
+            padding: 12px 25px;
+            font-size: 1rem;
+            text-decoration: none;
+            display: inline-block;
+            transition: all 0.3s;
+            border-radius: 50px;
+            color: white;
+        }
+
+        .action-btn:hover {
+            background-color: #6d7559;
+            transform: translateY(-3px);
+        }
+
+        .info-message {
+            background-color: #e8f5e9;
+            border-left: 4px solid var(--primary);
+            padding: 15px;
+            margin: 20px 0;
+            border-radius: 8px;
+        }
+
+        .flash-messages {
+            position: fixed;
+            top: 20px;
+            right: 20px;
+            z-index: 1000;
+        }
+
+        .flash-message {
+            padding: 15px 25px;
+            margin-bottom: 10px;
+            border-radius: 8px;
+            animation: slideIn 0.3s ease-out;
+        }
+
+        @keyframes slideIn {
+            from {
+                transform: translateX(100%);
+                opacity: 0;
+            }
+            to {
+                transform: translateX(0);
+                opacity: 1;
+            }
+        }
+    </style>
+</head>
+<body>
+    <nav>
+        <div class="logo">DermaAI</div>
+        <div class="nav-links">
+            <a href="/dashboard">Dashboard</a>
+            <a href="/data-explore">Skin Type</a>
+            <a href="/condition-prediction">Skin Conditions</a>
+            <a href="/history">History</a>
+            <a href="/profile">Profile</a>
+            <a href="/logout">Logout</a>
+        </div>
+    </nav>
+
+    <div class="flash-messages">
+        {% with messages = get_flashed_messages(with_categories=true) %}
+            {% if messages %}
+                {% for category, message in messages %}
+                    <div class="flash-message flash-{{ category }}">
+                        {{ message }}
+                    </div>
+                {% endfor %}
+            {% endif %}
+        {% endwith %}
+    </div>
+
+    <div class="container">
+        <div class="prediction-card">
+            <h1 style="color: var(--primary); margin-bottom: 20px;">🏥 Skin Condition Analysis</h1>
+            <p>Upload a clear image of your skin condition to get detailed analysis, doctor's recommendations, and personalized care plans.</p>
+            
+            <form method="POST" enctype="multipart/form-data" style="margin-top: 30px;">
+                <div class="upload-area" onclick="document.getElementById('imageInput').click()">
+                    <input type="file" id="imageInput" name="image" accept="image/*" onchange="previewImage(this)" required>
+                    <div id="uploadPrompt">
+                        <p>📸 Click to upload an image of your skin condition</p>
+                        <p style="font-size: 14px; color: #999;">PNG, JPG, JPEG accepted</p>
+                    </div>
+                    <img id="preview" class="preview-image" style="display: none;">
+                </div>
+                <div style="text-align: center;">
+                    <button type="submit" class="btn">Analyze Skin Condition</button>
+                </div>
+            </form>
+
+            {% if prediction %}
+            <div class="result">
+                <h2>Analysis Results</h2>
+                {% if uploaded_image %}
+                <img src="{{ url_for('static', filename='uploads/' + uploaded_image) }}" class="preview-image" style="display: block;">
+                {% endif %}
+                <div style="text-align: center;">
+                    <div class="condition-badge">
+                        🏥 Condition: {{ prediction.condition | title }}
+                    </div>
+                    <p>Confidence: {{ prediction.confidence }}</p>
+                    <p>{{ prediction.recommendations.description }}</p>
+                </div>
+
+                <div class="button-group">
+                    <a href="/doctors-routine" class="action-btn">👨‍⚕️ Doctor's Routine</a>
+                    <a href="/condition-products" class="action-btn">🛍️ Recommended Products</a>
+                    <a href="/condition-routine" class="action-btn">📋 Skincare Routine</a>
+                    <a href="/food-intake" class="action-btn">🥗 Food Intake Guide</a>
+                </div>
+
+                <div class="info-message">
+                    <strong>💡 Quick Tips:</strong>
+                    <ul style="margin-top: 10px; margin-left: 20px;">
+                        <li>Click "Doctor's Routine" for professional medical recommendations</li>
+                        <li>Click "Products" for condition-specific skincare products</li>
+                        <li>Click "Skincare Routine" for daily care steps</li>
+                        <li>Click "Food Intake" for dietary recommendations</li>
+                    </ul>
+                </div>
+            </div>
+            {% endif %}
+        </div>
+    </div>
+
+    <script>
+        function previewImage(input) {
+            const preview = document.getElementById('preview');
+            const prompt = document.getElementById('uploadPrompt');
+            
+            if (input.files && input.files[0]) {
+                const reader = new FileReader();
+                
+                reader.onload = function(e) {
+                    preview.src = e.target.result;
+                    preview.style.display = 'block';
+                    prompt.style.display = 'none';
+                }
+                
+                reader.readAsDataURL(input.files[0]);
+            }
+        }
+
+        setTimeout(function() {
+            const flashes = document.querySelectorAll('.flash-message');
+            flashes.forEach(flash => {
+                flash.style.opacity = '0';
+                setTimeout(() => flash.remove(), 300);
+            });
+        }, 5000);
+    </script>
+</body>
+</html>

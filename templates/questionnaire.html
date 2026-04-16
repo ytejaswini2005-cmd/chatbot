@@ -1,0 +1,676 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Facial Skin Questionnaire - SkinSight AI</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/css/bootstrap.min.css" rel="stylesheet">
+    <style>
+        .face-diagram {
+            background: linear-gradient(135deg, #FFE6D5 0%, #FFD4B8 100%);
+            border-radius: 50%;
+            width: 200px;
+            height: 200px;
+            margin: 0 auto 20px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            position: relative;
+            box-shadow: 0 10px 25px rgba(0,0,0,0.1);
+        }
+        .face-diagram span {
+            font-size: 80px;
+        }
+        .zone-badge {
+            position: absolute;
+            background: rgba(0,0,0,0.7);
+            color: white;
+            padding: 2px 8px;
+            border-radius: 20px;
+            font-size: 10px;
+            font-weight: bold;
+        }
+        .question-card {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            border-radius: 20px;
+            padding: 30px;
+            margin-bottom: 30px;
+            color: white;
+        }
+        .search-card {
+            background: linear-gradient(135deg, #11998e 0%, #38ef7d 100%);
+            border-radius: 20px;
+            padding: 30px;
+            margin-bottom: 30px;
+            color: white;
+        }
+        .result-card {
+            background: #f8f9fa;
+            border-radius: 15px;
+            padding: 25px;
+            margin-top: 30px;
+            border-left: 5px solid #007bff;
+        }
+        .condition-badge {
+            background: #28a745;
+            color: white;
+            padding: 8px 20px;
+            border-radius: 30px;
+            display: inline-block;
+            margin-bottom: 20px;
+        }
+        .brief-box {
+            background: white;
+            padding: 20px;
+            border-radius: 10px;
+            margin: 20px 0;
+            border: 1px solid #dee2e6;
+        }
+        .cure-list {
+            background: #e9ecef;
+            padding: 20px;
+            border-radius: 10px;
+            margin: 15px 0;
+        }
+        .cure-list li {
+            margin-bottom: 10px;
+        }
+        .warning-box {
+            background: #fff3cd;
+            border-left: 4px solid #ffc107;
+            padding: 15px;
+            margin-top: 20px;
+            border-radius: 5px;
+        }
+        .form-label {
+            font-weight: 600;
+            margin-top: 15px;
+        }
+        .btn-submit {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            border: none;
+            padding: 12px 30px;
+            font-weight: 600;
+            margin-top: 20px;
+        }
+        .btn-submit:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(0,0,0,0.2);
+        }
+        .btn-search {
+            background: linear-gradient(135deg, #11998e 0%, #38ef7d 100%);
+            border: none;
+            padding: 12px 30px;
+            font-weight: 600;
+        }
+        .btn-search:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(0,0,0,0.2);
+        }
+        .location-buttons {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 10px;
+            margin-top: 10px;
+        }
+        .location-btn {
+            flex: 1;
+            min-width: 80px;
+            padding: 10px;
+            border: 2px solid #dee2e6;
+            background: white;
+            border-radius: 10px;
+            cursor: pointer;
+            transition: all 0.3s;
+            text-align: center;
+        }
+        .location-btn:hover {
+            background: #e9ecef;
+        }
+        .location-btn.selected {
+            background: #667eea;
+            color: white;
+            border-color: #667eea;
+        }
+        input[type="text"], select, textarea {
+            border-radius: 10px;
+        }
+        .search-input {
+            border-radius: 10px;
+            padding: 12px;
+            font-size: 16px;
+        }
+        .disease-suggestion {
+            position: absolute;
+            background: white;
+            border: 1px solid #ddd;
+            border-radius: 10px;
+            max-height: 200px;
+            overflow-y: auto;
+            z-index: 1000;
+            width: calc(100% - 2px);
+            display: none;
+        }
+        .disease-suggestion div {
+            padding: 10px;
+            cursor: pointer;
+            border-bottom: 1px solid #eee;
+        }
+        .disease-suggestion div:hover {
+            background: #f0f0f0;
+        }
+        .search-container {
+            position: relative;
+        }
+    </style>
+</head>
+<body>
+    <nav class="navbar navbar-expand-lg navbar-dark bg-dark">
+        <div class="container">
+            <a class="navbar-brand" href="{{ url_for('dashboard') }}">🩺 SkinSight AI</a>
+            <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav">
+                <span class="navbar-toggler-icon"></span>
+            </button>
+            <div class="collapse navbar-collapse" id="navbarNav">
+                <ul class="navbar-nav ms-auto">
+                    <li class="nav-item">
+                        <a class="nav-link" href="{{ url_for('dashboard') }}">Dashboard</a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link active" href="{{ url_for('questionnaire') }}">📋 Questionnaire</a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="{{ url_for('logout') }}">Logout</a>
+                    </li>
+                </ul>
+            </div>
+        </div>
+    </nav>
+
+    <div class="container mt-5">
+        <div class="row">
+            <div class="col-lg-8 mx-auto">
+                <!-- Skin Disease Search Box -->
+                <div class="search-card">
+                    <div class="text-center">
+                        <h3 class="mb-3">🔍 Search Any Skin Disease</h3>
+                        <p>Enter a skin disease name to get its brief description and cure</p>
+                    </div>
+                    <div class="search-container">
+                        <input type="text" 
+                               id="diseaseSearch" 
+                               class="form-control search-input" 
+                               placeholder="e.g., Acne, Eczema, Psoriasis, Rosacea, Melasma..."
+                               autocomplete="off">
+                        <div id="suggestions" class="disease-suggestion"></div>
+                    </div>
+                    <div class="text-center mt-3">
+                        <button class="btn btn-search btn-light" onclick="searchDisease()">
+                            🔍 Get Disease Information
+                        </button>
+                    </div>
+                </div>
+
+                <!-- Disease Result Display -->
+                <div id="diseaseResult" style="display: none;"></div>
+
+                <!-- Questionnaire Section -->
+                <div class="question-card">
+                    <div class="text-center">
+                        <div class="face-diagram">
+                            <span>😊</span>
+                            <div class="zone-badge" style="top: 30px; left: 50%; transform: translateX(-50%);">Forehead</div>
+                            <div class="zone-badge" style="top: 80px; left: 30px;">T-zone</div>
+                            <div class="zone-badge" style="top: 80px; right: 30px;">Cheek</div>
+                            <div class="zone-badge" style="top: 130px; left: 50%; transform: translateX(-50%);">Chin/Jaw</div>
+                        </div>
+                        <h2 class="mb-3">📋 Facial Skin Questionnaire</h2>
+                        <p>Answer these questions about your facial skin concerns</p>
+                    </div>
+                </div>
+
+                <form method="POST" action="{{ url_for('questionnaire') }}" id="questionnaireForm">
+                    <div class="card shadow-sm mb-4">
+                        <div class="card-body">
+                            <!-- Question 1: Symptoms -->
+                            <div class="mb-4">
+                                <label for="symptoms" class="form-label">1. What symptoms are you experiencing on your face? *</label>
+                                <select class="form-select" id="symptoms" name="symptoms" required>
+                                    <option value="">Select your primary symptom</option>
+                                    <option value="pimples">Pimples, acne, or breakouts</option>
+                                    <option value="redness">Redness or flushing</option>
+                                    <option value="dry_scaly">Dry, scaly, or flaky patches</option>
+                                    <option value="itching">Itching or burning sensation</option>
+                                    <option value="dark_spots">Dark spots or pigmentation</option>
+                                    <option value="oily">Excessive oiliness or shine</option>
+                                    <option value="wrinkles">Wrinkles or fine lines</option>
+                                    <option value="blackheads">Blackheads or whiteheads</option>
+                                    <option value="sensitivity">Sensitivity or stinging</option>
+                                </select>
+                            </div>
+
+                            <!-- Question 2: Location on Face -->
+                            <div class="mb-4">
+                                <label class="form-label">2. Where on your face are you experiencing the issue? *</label>
+                                <div class="location-buttons" id="locationButtons">
+                                    <div class="location-btn" data-location="forehead">Forehead</div>
+                                    <div class="location-btn" data-location="nose">Nose</div>
+                                    <div class="location-btn" data-location="cheeks">Cheeks</div>
+                                    <div class="location-btn" data-location="chin">Chin</div>
+                                    <div class="location-btn" data-location="jawline">Jawline</div>
+                                    <div class="location-btn" data-location="t-zone">T-zone (forehead + nose)</div>
+                                    <div class="location-btn" data-location="whole_face">Whole Face</div>
+                                    <div class="location-btn" data-location="around_eyes">Around Eyes</div>
+                                </div>
+                                <input type="hidden" id="location" name="location" required>
+                                <small class="text-muted">Click on the area(s) that affect you (you can select multiple)</small>
+                            </div>
+
+                            <!-- Question 3: Duration -->
+                            <div class="mb-4">
+                                <label for="duration" class="form-label">3. How long have you had this facial skin concern? *</label>
+                                <select class="form-select" id="duration" name="duration" required>
+                                    <option value="">Select duration</option>
+                                    <option value="few_days">Few days</option>
+                                    <option value="1-2_weeks">1-2 weeks</option>
+                                    <option value="1-3_months">1-3 months</option>
+                                    <option value="6+_months">6+ months</option>
+                                    <option value="years">Several years (chronic)</option>
+                                </select>
+                            </div>
+
+                            <!-- Question 4: Triggers -->
+                            <div class="mb-4">
+                                <label for="triggers" class="form-label">4. What triggers or worsens your facial skin issues?</label>
+                                <select class="form-select" id="triggers" name="triggers">
+                                    <option value="">Select triggers (optional)</option>
+                                    <option value="stress">Stress</option>
+                                    <option value="spicy_foods">Spicy foods</option>
+                                    <option value="dairy">Dairy products</option>
+                                    <option value="sugar">Sugar/sweets</option>
+                                    <option value="alcohol">Alcohol</option>
+                                    <option value="sun">Sun exposure</option>
+                                    <option value="weather">Weather changes (hot/cold)</option>
+                                    <option value="skincare">New skincare products</option>
+                                    <option value="makeup">Makeup</option>
+                                    <option value="hormones">Hormonal changes (menstrual cycle)</option>
+                                </select>
+                            </div>
+
+                            <!-- Question 5: Additional Details -->
+                            <div class="mb-4">
+                                <label for="other_details" class="form-label">5. Additional details about your facial skin concern</label>
+                                <textarea class="form-control" id="other_details" name="other_details" rows="3" 
+                                          placeholder="e.g., Do you use any skincare products? Any medical history? Does it appear around your period? etc."></textarea>
+                            </div>
+
+                            <button type="submit" class="btn btn-submit btn-primary w-100">
+                                🔍 Analyze My Facial Skin Concern
+                            </button>
+                        </div>
+                    </div>
+                </form>
+
+                {% if result %}
+                <div class="result-card">
+                    <div class="text-center">
+                        <span class="condition-badge">🔍 Possible Facial Condition: {{ result.condition }}</span>
+                    </div>
+                    
+                    <h3 class="mt-4">📖 About {{ result.condition }}</h3>
+                    <div class="brief-box">
+                        <p>{{ result.info.brief }}</p>
+                    </div>
+
+                    <h4>💊 Basic Care & Treatment</h4>
+                    <div class="cure-list">
+                        <ul>
+                            {% for cure in result.info.basic_cure %}
+                            <li>{{ cure|safe }}</li>
+                            {% endfor %}
+                        </ul>
+                    </div>
+
+                    <h4>🌿 Home Remedies for Face</h4>
+                    <div class="cure-list">
+                        <ul>
+                            {% for remedy in result.info.home_remedies %}
+                            <li>{{ remedy }}</li>
+                            {% endfor %}
+                        </ul>
+                    </div>
+
+                    <h4>✅ Facial Skincare Tips</h4>
+                    <div class="cure-list">
+                        <ul>
+                            {% for tip in result.info.prevention %}
+                            <li>{{ tip }}</li>
+                            {% endfor %}
+                        </ul>
+                    </div>
+
+                    <div class="warning-box">
+                        <strong>⚠️ Important Warning Signs:</strong><br>
+                        {{ result.info.warning_signs }}
+                    </div>
+
+                    <div class="alert alert-info mt-3">
+                        <strong>💡 Note:</strong> This information is for educational purposes only. Please consult a qualified dermatologist for proper diagnosis and treatment of facial skin conditions.
+                    </div>
+
+                    <div class="mt-4">
+                        <h5>📊 Your Responses:</h5>
+                        <ul class="list-unstyled">
+                            <li><strong>Symptoms:</strong> {{ result.symptoms }}</li>
+                            <li><strong>Location on Face:</strong> {{ result.location }}</li>
+                            <li><strong>Duration:</strong> {{ result.duration }}</li>
+                            {% if result.triggers %}
+                            <li><strong>Triggers:</strong> {{ result.triggers }}</li>
+                            {% endif %}
+                        </ul>
+                    </div>
+                </div>
+                {% endif %}
+
+                <div class="alert alert-secondary mt-4">
+                    <strong>🔬 About Our Analysis:</strong> Our facial skin questionnaire uses pattern recognition based on common dermatological presentations specific to facial skin. For accurate diagnosis, always consult a healthcare professional.
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <footer class="bg-dark text-white text-center py-4 mt-5">
+        <div class="container">
+            <p class="mb-0">SkinSight AI - Facial Skin Analysis & Care</p>
+            <small>For medical emergencies, please seek immediate professional care</small>
+        </div>
+    </footer>
+
+    <script>
+        // Disease Database with brief and cure
+        const diseaseDatabase = {
+            'acne': {
+                name: 'Acne Vulgaris',
+                brief: 'Acne is a common skin condition that occurs when hair follicles become clogged with oil and dead skin cells. It causes whiteheads, blackheads, pimples, and sometimes deeper cysts or nodules. It most commonly affects the face, chest, and back.',
+                cure: [
+                    '🧼 **Gentle Cleansing**: Wash face twice daily with a mild, non-comedogenic cleanser',
+                    '🔬 **Benzoyl Peroxide**: Use OTC benzoyl peroxide products to kill bacteria and dry excess oil',
+                    '⚗️ **Salicylic Acid**: Apply products with salicylic acid to unclog pores',
+                    '💧 **Oil-Free Moisturizer**: Use lightweight, non-comedogenic moisturizers even if skin is oily',
+                    '🚫 **Don\'t Pick**: Never pop or squeeze pimples to prevent scarring and infection',
+                    '🧴 **Spot Treatments**: Apply targeted spot treatments containing sulfur or tea tree oil',
+                    '🏥 **Professional Care**: See a dermatologist for persistent acne; prescription options include retinoids, antibiotics, or isotretinoin'
+                ],
+                home_remedies: [
+                    'Apply ice to reduce inflammation of large pimples',
+                    'Use tea tree oil diluted with carrier oil as spot treatment',
+                    'Apply green tea compresses for antioxidant benefits',
+                    'Use honey as an antibacterial face mask',
+                    'Apply aloe vera to reduce redness'
+                ]
+            },
+            'eczema': {
+                name: 'Eczema (Atopic Dermatitis)',
+                brief: 'Eczema is a chronic inflammatory skin condition that causes dry, itchy, and inflamed patches of skin. It often appears in childhood and can persist into adulthood. The condition is linked to an overactive immune response to irritants or allergens.',
+                cure: [
+                    '🩺 **Immediate Relief**: Apply cold compresses to reduce itching and inflammation',
+                    '💧 **Moisturize Frequently**: Use thick, fragrance-free moisturizers at least 2-3 times daily',
+                    '🚿 **Gentle Cleansing**: Take short, lukewarm showers and use mild, soap-free cleansers',
+                    '🧴 **Topical Treatments**: Apply over-the-counter hydrocortisone cream (1%) for mild flare-ups',
+                    '🌡️ **Avoid Triggers**: Identify and avoid triggers like harsh soaps, stress, and certain foods',
+                    '💊 **Antihistamines**: Oral antihistamines can help control itching, especially at night'
+                ],
+                home_remedies: [
+                    'Apply coconut oil or shea butter for natural moisturizing',
+                    'Use colloidal oatmeal in bath water to soothe irritated skin',
+                    'Apply aloe vera gel directly to affected areas',
+                    'Take warm baths with Epsom salts'
+                ]
+            },
+            'psoriasis': {
+                name: 'Psoriasis',
+                brief: 'Psoriasis is an autoimmune condition that causes rapid buildup of skin cells, resulting in thick, red, scaly patches that are often itchy and sometimes painful. It\'s a chronic condition with periods of flare-ups and remission.',
+                cure: [
+                    '🧴 **Topical Treatments**: Use over-the-counter creams containing salicylic acid or coal tar',
+                    '💧 **Moisturize**: Apply thick moisturizers daily to reduce dryness and scaling',
+                    '🌞 **Sunlight Exposure**: Moderate sun exposure can help improve symptoms',
+                    '🛁 **Bath Therapy**: Take warm baths with Epsom salts or oatmeal to soothe skin',
+                    '🏥 **Medical Treatment**: See a dermatologist for prescription treatments including topical steroids or light therapy'
+                ],
+                home_remedies: [
+                    'Apply aloe vera gel directly to plaques several times daily',
+                    'Take oatmeal baths to soothe itching',
+                    'Apply apple cider vinegar to the scalp to relieve itching',
+                    'Use turmeric as an anti-inflammatory supplement'
+                ]
+            },
+            'rosacea': {
+                name: 'Rosacea',
+                brief: 'Rosacea is a chronic inflammatory skin condition that causes facial redness, visible blood vessels, and sometimes small, red, pus-filled bumps. It typically affects the central face (cheeks, nose, forehead).',
+                cure: [
+                    '🧴 **Gentle Skincare**: Use mild, fragrance-free cleansers and moisturizers',
+                    '🌞 **Sun Protection**: Apply broad-spectrum sunscreen (SPF 30+) daily',
+                    '❄️ **Cool Compresses**: Apply cold compresses to reduce redness and inflammation',
+                    '🚫 **Avoid Triggers**: Identify and avoid personal triggers (spicy foods, alcohol, hot drinks)',
+                    '🏥 **Medical Care**: See a dermatologist for prescription medications or laser therapy'
+                ],
+                home_remedies: [
+                    'Apply green tea compresses to reduce inflammation',
+                    'Use aloe vera gel for soothing relief',
+                    'Apply cucumber slices to calm irritated skin',
+                    'Use colloidal oatmeal masks'
+                ]
+            },
+            'melasma': {
+                name: 'Melasma',
+                brief: 'Melasma is a common skin condition that causes brown or gray-brown patches on the face, particularly on the cheeks, forehead, upper lip, and nose. It is often triggered by hormonal changes and sun exposure.',
+                cure: [
+                    '🌞 **Strict Sun Protection**: Use broad-spectrum SPF 50+ sunscreen daily',
+                    '🧴 **Sun-Protective Gear**: Wear wide-brimmed hats and seek shade',
+                    '💊 **Topical Brighteners**: Use products with vitamin C, niacinamide, or kojic acid',
+                    '🔬 **Gentle Exfoliation**: Use AHAs (glycolic acid) to promote cell turnover',
+                    '🏥 **Professional Treatment**: See a dermatologist for prescription hydroquinone or chemical peels'
+                ],
+                home_remedies: [
+                    'Apply aloe vera gel mixed with vitamin E',
+                    'Use turmeric and yogurt masks for brightening',
+                    'Apply licorice extract to lighten dark spots',
+                    'Use potato slices on dark areas'
+                ]
+            },
+            'contact dermatitis': {
+                name: 'Contact Dermatitis',
+                brief: 'Contact dermatitis is a localized skin reaction caused by direct contact with an irritant or allergen. It appears as red, itchy, inflamed skin that may blister or ooze.',
+                cure: [
+                    '🧼 **Immediate Cleansing**: Wash affected area thoroughly with mild soap and water',
+                    '❄️ **Cold Compresses**: Apply cool, wet compresses to reduce inflammation',
+                    '🧴 **Topical Treatments**: Use over-the-counter hydrocortisone cream (1%) for mild reactions',
+                    '💊 **Oral Antihistamines**: Take antihistamines to control itching',
+                    '🚫 **Avoid Irritant**: Identify and avoid contact with the triggering substance'
+                ],
+                home_remedies: [
+                    'Apply aloe vera gel for cooling relief',
+                    'Use baking soda paste to reduce itching',
+                    'Apply apple cider vinegar diluted with water as a compress',
+                    'Use coconut oil to moisturize and protect skin'
+                ]
+            }
+        };
+
+        // Search functionality
+        function searchDisease() {
+            const searchTerm = document.getElementById('diseaseSearch').value.toLowerCase().trim();
+            
+            if (searchTerm === '') {
+                alert('Please enter a skin disease name to search');
+                return;
+            }
+            
+            // Find matching disease
+            let matchedDisease = null;
+            let matchedKey = null;
+            
+            for (let [key, disease] of Object.entries(diseaseDatabase)) {
+                if (searchTerm.includes(key) || key.includes(searchTerm) || 
+                    disease.name.toLowerCase().includes(searchTerm)) {
+                    matchedDisease = disease;
+                    matchedKey = key;
+                    break;
+                }
+            }
+            
+            if (matchedDisease) {
+                displayDiseaseResult(matchedDisease);
+            } else {
+                displayNotFound(searchTerm);
+            }
+        }
+        
+        function displayDiseaseResult(disease) {
+            const resultDiv = document.getElementById('diseaseResult');
+            
+            let cureHtml = '<ul>';
+            disease.cure.forEach(cure => {
+                cureHtml += `<li>${cure}</li>`;
+            });
+            cureHtml += '</ul>';
+            
+            let remediesHtml = '';
+            if (disease.home_remedies) {
+                remediesHtml = `
+                    <h4>🌿 Home Remedies</h4>
+                    <div class="cure-list">
+                        <ul>
+                            ${disease.home_remedies.map(remedy => `<li>${remedy}</li>`).join('')}
+                        </ul>
+                    </div>
+                `;
+            }
+            
+            resultDiv.innerHTML = `
+                <div class="result-card">
+                    <div class="text-center">
+                        <span class="condition-badge">🔍 ${disease.name}</span>
+                    </div>
+                    
+                    <h3 class="mt-4">📖 About ${disease.name}</h3>
+                    <div class="brief-box">
+                        <p>${disease.brief}</p>
+                    </div>
+
+                    <h4>💊 Basic Cure & Treatment</h4>
+                    <div class="cure-list">
+                        ${cureHtml}
+                    </div>
+                    
+                    ${remediesHtml}
+                    
+                    <div class="warning-box">
+                        <strong>⚠️ Important Note:</strong><br>
+                        This information is for educational purposes only. Please consult a qualified dermatologist for proper diagnosis and treatment.
+                    </div>
+                </div>
+            `;
+            
+            resultDiv.style.display = 'block';
+            
+            // Scroll to result
+            resultDiv.scrollIntoView({ behavior: 'smooth', block: 'start' });
+        }
+        
+        function displayNotFound(searchTerm) {
+            const resultDiv = document.getElementById('diseaseResult');
+            resultDiv.innerHTML = `
+                <div class="alert alert-warning">
+                    <strong>⚠️ No information found for "${searchTerm}"</strong><br>
+                    Please try one of these common skin diseases: Acne, Eczema, Psoriasis, Rosacea, Melasma, Contact Dermatitis
+                </div>
+            `;
+            resultDiv.style.display = 'block';
+            
+            setTimeout(() => {
+                resultDiv.scrollIntoView({ behavior: 'smooth', block: 'start' });
+            }, 100);
+        }
+        
+        // Auto-suggest functionality
+        const diseaseNames = [
+            'Acne', 'Eczema', 'Psoriasis', 'Rosacea', 'Melasma', 
+            'Contact Dermatitis', 'Seborrheic Dermatitis', 'Hives', 
+            'Vitiligo', 'Impetigo', 'Cellulitis', 'Shingles'
+        ];
+        
+        document.getElementById('diseaseSearch').addEventListener('input', function() {
+            const input = this.value.toLowerCase();
+            const suggestionsDiv = document.getElementById('suggestions');
+            
+            if (input.length < 2) {
+                suggestionsDiv.style.display = 'none';
+                return;
+            }
+            
+            const matches = diseaseNames.filter(name => 
+                name.toLowerCase().includes(input)
+            );
+            
+            if (matches.length > 0) {
+                suggestionsDiv.innerHTML = matches.map(match => 
+                    `<div onclick="selectDisease('${match}')">${match}</div>`
+                ).join('');
+                suggestionsDiv.style.display = 'block';
+            } else {
+                suggestionsDiv.style.display = 'none';
+            }
+        });
+        
+        function selectDisease(disease) {
+            document.getElementById('diseaseSearch').value = disease;
+            document.getElementById('suggestions').style.display = 'none';
+            searchDisease();
+        }
+        
+        // Close suggestions when clicking outside
+        document.addEventListener('click', function(e) {
+            if (!e.target.closest('.search-container')) {
+                document.getElementById('suggestions').style.display = 'none';
+            }
+        });
+        
+        // Enter key to search
+        document.getElementById('diseaseSearch').addEventListener('keypress', function(e) {
+            if (e.key === 'Enter') {
+                searchDisease();
+            }
+        });
+        
+        // Handle location button selection (allow multiple selections)
+        let selectedLocations = [];
+        
+        document.querySelectorAll('.location-btn').forEach(btn => {
+            btn.addEventListener('click', function() {
+                const location = this.dataset.location;
+                const index = selectedLocations.indexOf(location);
+                
+                if (index === -1) {
+                    selectedLocations.push(location);
+                    this.classList.add('selected');
+                } else {
+                    selectedLocations.splice(index, 1);
+                    this.classList.remove('selected');
+                }
+                
+                // Update hidden input with selected locations
+                document.getElementById('location').value = selectedLocations.join(', ');
+                
+                // Remove required attribute if at least one is selected
+                if (selectedLocations.length > 0) {
+                    document.getElementById('location').removeAttribute('required');
+                } else {
+                    document.getElementById('location').setAttribute('required', 'required');
+                }
+            });
+        });
+    </script>
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/js/bootstrap.bundle.min.js"></script>
+</body>
+</html>

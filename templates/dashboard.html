@@ -1,0 +1,253 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Dashboard - DermaAI</title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600&family=Playfair+Display:wght@700&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --primary: #8E9775;
+            --accent: #E28E8E;
+            --bg: #FAF9F6;
+            --text: #333;
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Inter', sans-serif;
+            background-color: var(--bg);
+            color: var(--text);
+        }
+
+        nav {
+            background: white;
+            padding: 1rem 10%;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.05);
+        }
+
+        .logo {
+            font-family: 'Playfair Display', serif;
+            font-size: 1.5rem;
+            color: var(--primary);
+            font-weight: bold;
+        }
+
+        .nav-links a {
+            margin-left: 20px;
+            text-decoration: none;
+            color: var(--text);
+            transition: color 0.3s;
+        }
+
+        .nav-links a:hover {
+            color: var(--primary);
+        }
+
+        .dashboard-container {
+            padding: 60px 10%;
+            min-height: calc(100vh - 140px);
+        }
+
+        .welcome {
+            text-align: center;
+            margin-bottom: 50px;
+        }
+
+        .welcome h1 {
+            font-family: 'Playfair Display', serif;
+            font-size: 2.5rem;
+            color: var(--primary);
+            margin-bottom: 10px;
+        }
+
+        .options-grid {
+            display: flex;
+            justify-content: space-between;
+            gap: 30px;
+            max-width: 1200px;
+            margin: 0 auto;
+            flex-wrap: wrap;
+        }
+
+        .option-card {
+            background: white;
+            padding: 40px;
+            border-radius: 20px;
+            text-align: center;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.05);
+            text-decoration: none;
+            display: block;
+            flex: 1;
+            min-width: 250px;
+        }
+
+        .option-card:hover {
+            transform: translateY(-10px);
+            box-shadow: 0 20px 40px rgba(0,0,0,0.1);
+        }
+
+        .option-icon {
+            font-size: 4rem;
+            margin-bottom: 20px;
+        }
+
+        .option-card h2 {
+            color: var(--primary);
+            margin-bottom: 15px;
+            font-size: 1.5rem;
+        }
+
+        .option-card p {
+            color: #666;
+            line-height: 1.6;
+        }
+
+        footer {
+            background: white;
+            padding: 20px 10%;
+            text-align: center;
+            color: #666;
+            border-top: 1px solid #e0e0e0;
+        }
+
+        .flash-messages {
+            position: fixed;
+            top: 20px;
+            right: 20px;
+            z-index: 1000;
+        }
+
+        .flash-message {
+            padding: 15px 25px;
+            margin-bottom: 10px;
+            border-radius: 8px;
+            animation: slideIn 0.3s ease-out;
+        }
+
+        .flash-success {
+            background-color: #d4edda;
+            color: #155724;
+            border: 1px solid #c3e6cb;
+        }
+
+        .flash-danger {
+            background-color: #f8d7da;
+            color: #721c24;
+            border: 1px solid #f5c6cb;
+        }
+
+        .flash-warning {
+            background-color: #fff3cd;
+            color: #856404;
+            border: 1px solid #ffeeba;
+        }
+
+        .flash-info {
+            background-color: #d1ecf1;
+            color: #0c5460;
+            border: 1px solid #bee5eb;
+        }
+
+        @keyframes slideIn {
+            from {
+                transform: translateX(100%);
+                opacity: 0;
+            }
+            to {
+                transform: translateX(0);
+                opacity: 1;
+            }
+        }
+
+        @media (max-width: 768px) {
+            .options-grid {
+                flex-direction: column;
+            }
+            .dashboard-container {
+                padding: 40px 5%;
+            }
+        }
+    </style>
+</head>
+<body>
+    <nav>
+        <div class="logo">DermaAI</div>
+        <div class="nav-links">
+            <a href="/dashboard">Dashboard</a>
+            <a href="/history">History</a>
+            <a href="/profile">Profile</a>
+            <a href="/logout">Logout</a>
+        </div>
+    </nav>
+
+    <div class="flash-messages">
+        {% with messages = get_flashed_messages(with_categories=true) %}
+            {% if messages %}
+                {% for category, message in messages %}
+                    <div class="flash-message flash-{{ category }}">
+                        {{ message }}
+                    </div>
+                {% endfor %}
+            {% endif %}
+        {% endwith %}
+    </div>
+
+    <div class="dashboard-container">
+        <div class="welcome">
+            <h1>Welcome, {{ username }}! 👋</h1>
+            <p>What would you like to do today?</p>
+        </div>
+
+        <div class="options-grid">
+            <a href="/data-explore" class="option-card">
+                <div class="option-icon">🔍</div>
+                <h2>Data Explore</h2>
+                <p>Upload an image to analyze skin type and get personalized skincare suggestions</p>
+            </a>
+
+            <a href="/prediction" class="option-card">
+                <div class="option-icon">🧪</div>
+                <h2>Prediction</h2>
+                <p>Quick skin type prediction with detailed analysis and recommendations</p>
+            </a>
+            
+            <a href="/condition-prediction" class="option-card">
+                <div class="option-icon">🏥</div>
+                <h2>Skin Condition Analysis</h2>
+                <p>Detect skin conditions and get doctor's recommendations, products, and dietary advice</p>
+            </a>
+            
+            <a href="/questionnaire" class="option-card">
+                <div class="option-icon">📋</div>
+                <h2>Facial Skin Questionnaire</h2>
+                <p>Answer questions about your facial skin concerns. Get personalized insights about acne, redness, pigmentation, and more.</p>
+            </a>
+        </div>
+    </div>
+
+    <footer>
+        <p>&copy; 2026 DermaAI Skincare Project. All rights reserved.</p>
+    </footer>
+
+    <script>
+        setTimeout(function() {
+            const flashes = document.querySelectorAll('.flash-message');
+            flashes.forEach(flash => {
+                flash.style.opacity = '0';
+                setTimeout(() => flash.remove(), 300);
+            });
+        }, 5000);
+    </script>
+</body>
+</html>

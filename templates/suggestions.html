@@ -1,0 +1,265 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Skincare Suggestions - DermaAI</title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600&family=Playfair+Display:wght@700&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --primary: #8E9775;
+            --accent: #E28E8E;
+            --bg: #FAF9F6;
+            --text: #333;
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Inter', sans-serif;
+            background-color: var(--bg);
+            color: var(--text);
+        }
+
+        nav {
+            background: white;
+            padding: 1rem 10%;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.05);
+        }
+
+        .logo {
+            font-family: 'Playfair Display', serif;
+            font-size: 1.5rem;
+            color: var(--primary);
+            font-weight: bold;
+        }
+
+        .nav-links a {
+            margin-left: 20px;
+            text-decoration: none;
+            color: var(--text);
+            transition: color 0.3s;
+        }
+
+        .nav-links a:hover {
+            color: var(--primary);
+        }
+
+        .container {
+            padding: 60px 10%;
+            max-width: 1000px;
+            margin: 0 auto;
+        }
+
+        .suggestions-card {
+            background: white;
+            padding: 40px;
+            border-radius: 20px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.05);
+        }
+
+        .skin-type-header {
+            text-align: center;
+            margin-bottom: 30px;
+        }
+
+        .skin-type-badge {
+            display: inline-block;
+            padding: 10px 20px;
+            background: var(--primary);
+            color: white;
+            border-radius: 50px;
+            font-size: 1.2rem;
+            margin: 10px 0;
+        }
+
+        .description {
+            background: #f9f9f9;
+            padding: 20px;
+            border-radius: 10px;
+            margin: 20px 0;
+            font-size: 1.1rem;
+            line-height: 1.6;
+        }
+
+        .suggestions-list {
+            list-style: none;
+            padding: 0;
+        }
+
+        .suggestion-item {
+            padding: 15px;
+            margin: 10px 0;
+            background: #f9f9f9;
+            border-left: 4px solid var(--primary);
+            border-radius: 8px;
+            transition: transform 0.2s;
+        }
+
+        .suggestion-item:hover {
+            transform: translateX(5px);
+            background: #f0f0f0;
+        }
+
+        .suggestion-number {
+            display: inline-block;
+            width: 30px;
+            height: 30px;
+            background: var(--primary);
+            color: white;
+            border-radius: 50%;
+            text-align: center;
+            line-height: 30px;
+            margin-right: 15px;
+            font-weight: bold;
+        }
+
+        .suggestion-text {
+            display: inline;
+            font-size: 1rem;
+            line-height: 1.5;
+        }
+
+        .back-button {
+            display: inline-block;
+            margin-top: 30px;
+            padding: 12px 30px;
+            background-color: var(--primary);
+            color: white;
+            text-decoration: none;
+            border-radius: 50px;
+            transition: all 0.3s;
+        }
+
+        .back-button:hover {
+            background-color: #6d7559;
+            transform: translateY(-2px);
+        }
+
+        .button-group {
+            display: flex;
+            gap: 15px;
+            justify-content: center;
+            margin-top: 30px;
+            flex-wrap: wrap;
+        }
+
+        .nav-button {
+            padding: 10px 25px;
+            background-color: var(--accent);
+            color: white;
+            text-decoration: none;
+            border-radius: 50px;
+            transition: all 0.3s;
+        }
+
+        .nav-button:hover {
+            background-color: #c97a7a;
+            transform: translateY(-2px);
+        }
+
+        .flash-messages {
+            position: fixed;
+            top: 20px;
+            right: 20px;
+            z-index: 1000;
+        }
+
+        .flash-message {
+            padding: 15px 25px;
+            margin-bottom: 10px;
+            border-radius: 8px;
+            animation: slideIn 0.3s ease-out;
+        }
+
+        @keyframes slideIn {
+            from {
+                transform: translateX(100%);
+                opacity: 0;
+            }
+            to {
+                transform: translateX(0);
+                opacity: 1;
+            }
+        }
+    </style>
+</head>
+<body>
+    <nav>
+        <div class="logo">DermaAI</div>
+        <div class="nav-links">
+            <a href="/dashboard">Dashboard</a>
+            <a href="/data-explore">Data Explore</a>
+            <a href="/prediction">Prediction</a>
+            <a href="/history">History</a>
+            <a href="/profile">Profile</a>
+            <a href="/logout">Logout</a>
+        </div>
+    </nav>
+
+    <div class="flash-messages">
+        {% with messages = get_flashed_messages(with_categories=true) %}
+            {% if messages %}
+                {% for category, message in messages %}
+                    <div class="flash-message flash-{{ category }}">
+                        {{ message }}
+                    </div>
+                {% endfor %}
+            {% endif %}
+        {% endwith %}
+    </div>
+
+    <div class="container">
+        <div class="suggestions-card">
+            <div class="skin-type-header">
+                <h1>✨ Skincare Suggestions</h1>
+                <div class="skin-type-badge">
+                    {{ skin_type | title }} Skin
+                </div>
+            </div>
+
+            <div class="description">
+                <strong>📝 About {{ skin_type }} Skin:</strong><br>
+                {{ description }}
+            </div>
+
+            <h2>💡 15 Essential Tips for {{ skin_type | title }} Skin</h2>
+            <ul class="suggestions-list">
+                {% for suggestion in suggestions %}
+                <li class="suggestion-item">
+                    <span class="suggestion-number">{{ loop.index }}</span>
+                    <span class="suggestion-text">{{ suggestion }}</span>
+                </li>
+                {% endfor %}
+            </ul>
+
+            <div class="button-group">
+                <a href="/products" class="nav-button">🛍️ View Products</a>
+                <a href="/routine" class="nav-button">📋 View Routine</a>
+                <a href="/data-explore" class="nav-button">📸 Upload New Image</a>
+            </div>
+
+            <div style="text-align: center;">
+                <a href="/data-explore" class="back-button">← Back to Analysis</a>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        setTimeout(function() {
+            const flashes = document.querySelectorAll('.flash-message');
+            flashes.forEach(flash => {
+                flash.style.opacity = '0';
+                setTimeout(() => flash.remove(), 300);
+            });
+        }, 5000);
+    </script>
+</body>
+</html>

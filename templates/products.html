@@ -1,0 +1,530 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Recommended Products - DermaAI</title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600&family=Playfair+Display:wght@700&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --primary: #8E9775;
+            --accent: #E28E8E;
+            --bg: #FAF9F6;
+            --text: #333;
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Inter', sans-serif;
+            background-color: var(--bg);
+            color: var(--text);
+        }
+
+        nav {
+            background: white;
+            padding: 1rem 10%;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.05);
+            position: sticky;
+            top: 0;
+            z-index: 100;
+        }
+
+        .logo {
+            font-family: 'Playfair Display', serif;
+            font-size: 1.5rem;
+            color: var(--primary);
+            font-weight: bold;
+        }
+
+        .nav-links a {
+            margin-left: 20px;
+            text-decoration: none;
+            color: var(--text);
+            transition: color 0.3s;
+        }
+
+        .nav-links a:hover {
+            color: var(--primary);
+        }
+
+        .container {
+            padding: 60px 10%;
+            max-width: 1400px;
+            margin: 0 auto;
+        }
+
+        .products-card {
+            background: white;
+            padding: 40px;
+            border-radius: 20px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.05);
+        }
+
+        .skin-type-header {
+            text-align: center;
+            margin-bottom: 30px;
+        }
+
+        .skin-type-badge {
+            display: inline-block;
+            padding: 10px 20px;
+            background: var(--primary);
+            color: white;
+            border-radius: 50px;
+            font-size: 1.2rem;
+            margin: 10px 0;
+        }
+
+        .description {
+            background: #f9f9f9;
+            padding: 20px;
+            border-radius: 10px;
+            margin: 20px 0;
+            font-size: 1.1rem;
+            line-height: 1.6;
+            border-left: 4px solid var(--primary);
+        }
+
+        .products-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(320px, 1fr));
+            gap: 25px;
+            margin-top: 30px;
+        }
+
+        .product-card {
+            background: linear-gradient(135deg, #fff 0%, #f9f9f9 100%);
+            border-radius: 15px;
+            padding: 20px;
+            transition: all 0.3s ease;
+            border: 1px solid #e0e0e0;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .product-card::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            height: 3px;
+            background: var(--primary);
+            transform: scaleX(0);
+            transition: transform 0.3s ease;
+        }
+
+        .product-card:hover::before {
+            transform: scaleX(1);
+        }
+
+        .product-card:hover {
+            transform: translateY(-8px);
+            box-shadow: 0 15px 30px rgba(0,0,0,0.15);
+            border-color: var(--primary);
+        }
+
+        .product-icon {
+            font-size: 2.5rem;
+            margin-bottom: 10px;
+        }
+
+        .product-number {
+            display: inline-block;
+            background: var(--accent);
+            color: white;
+            border-radius: 20px;
+            padding: 3px 12px;
+            font-size: 0.75rem;
+            font-weight: 600;
+            margin-bottom: 12px;
+        }
+
+        .product-name {
+            font-size: 1.1rem;
+            font-weight: 700;
+            color: var(--primary);
+            margin-bottom: 15px;
+            line-height: 1.4;
+        }
+
+        .product-description {
+            font-size: 0.85rem;
+            color: #666;
+            margin-bottom: 15px;
+            line-height: 1.5;
+        }
+
+        .product-links {
+            display: flex;
+            gap: 10px;
+            margin-top: 15px;
+            flex-wrap: wrap;
+        }
+
+        .product-link {
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            padding: 10px 20px;
+            text-decoration: none;
+            border-radius: 25px;
+            font-size: 0.85rem;
+            font-weight: 600;
+            transition: all 0.3s;
+            flex: 1;
+            justify-content: center;
+            cursor: pointer;
+        }
+
+        .product-link.amazon {
+            background-color: #FF9900;
+            color: white;
+            border: none;
+        }
+
+        .product-link.amazon:hover {
+            background-color: #e68a00;
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(255, 153, 0, 0.3);
+        }
+
+        .product-link.google {
+            background-color: #4285F4;
+            color: white;
+        }
+
+        .product-link.google:hover {
+            background-color: #3367d6;
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(66, 133, 244, 0.3);
+        }
+
+        .back-button {
+            display: inline-block;
+            margin-top: 30px;
+            padding: 12px 30px;
+            background-color: var(--primary);
+            color: white;
+            text-decoration: none;
+            border-radius: 50px;
+            transition: all 0.3s;
+        }
+
+        .back-button:hover {
+            background-color: #6d7559;
+            transform: translateY(-2px);
+        }
+
+        .button-group {
+            display: flex;
+            gap: 15px;
+            justify-content: center;
+            margin-top: 30px;
+            flex-wrap: wrap;
+        }
+
+        .nav-button {
+            padding: 10px 25px;
+            background-color: var(--accent);
+            color: white;
+            text-decoration: none;
+            border-radius: 50px;
+            transition: all 0.3s;
+            display: inline-flex;
+            align-items: center;
+            gap: 5px;
+        }
+
+        .nav-button:hover {
+            background-color: #c97a7a;
+            transform: translateY(-2px);
+        }
+
+        .filter-section {
+            margin: 20px 0;
+            text-align: center;
+        }
+
+        .filter-btn {
+            padding: 8px 20px;
+            margin: 0 5px;
+            background: white;
+            border: 2px solid var(--primary);
+            color: var(--primary);
+            border-radius: 25px;
+            cursor: pointer;
+            transition: all 0.3s;
+            font-weight: 500;
+        }
+
+        .filter-btn.active {
+            background: var(--primary);
+            color: white;
+        }
+
+        .filter-btn:hover {
+            background: var(--primary);
+            color: white;
+            transform: translateY(-2px);
+        }
+
+        .flash-messages {
+            position: fixed;
+            top: 20px;
+            right: 20px;
+            z-index: 1000;
+        }
+
+        .flash-message {
+            padding: 15px 25px;
+            margin-bottom: 10px;
+            border-radius: 8px;
+            animation: slideIn 0.3s ease-out;
+        }
+
+        @keyframes slideIn {
+            from {
+                transform: translateX(100%);
+                opacity: 0;
+            }
+            to {
+                transform: translateX(0);
+                opacity: 1;
+            }
+        }
+
+        @media (max-width: 768px) {
+            .container {
+                padding: 30px 5%;
+            }
+            
+            .products-card {
+                padding: 20px;
+            }
+            
+            .products-grid {
+                grid-template-columns: 1fr;
+            }
+            
+            .product-links {
+                flex-direction: column;
+            }
+        }
+    </style>
+</head>
+<body>
+    <nav>
+        <div class="logo">DermaAI</div>
+        <div class="nav-links">
+            <a href="/dashboard">Dashboard</a>
+            <a href="/data-explore">Data Explore</a>
+            <a href="/prediction">Prediction</a>
+            <a href="/history">History</a>
+            <a href="/profile">Profile</a>
+            <a href="/logout">Logout</a>
+        </div>
+    </nav>
+
+    <div class="flash-messages">
+        {% with messages = get_flashed_messages(with_categories=true) %}
+            {% if messages %}
+                {% for category, message in messages %}
+                    <div class="flash-message flash-{{ category }}">
+                        {{ message }}
+                    </div>
+                {% endfor %}
+            {% endif %}
+        {% endwith %}
+    </div>
+
+    <div class="container">
+        <div class="products-card">
+            <div class="skin-type-header">
+                <h1>🛍️ Recommended Products</h1>
+                <div class="skin-type-badge">
+                    {{ skin_type | title }} Skin
+                </div>
+            </div>
+
+            <div class="description">
+                <strong>📝 Best Products for {{ skin_type }} Skin:</strong><br>
+                {{ description }}
+                <br><br>
+                <small>💡 Click on any product link to search for it on Google or Amazon!</small>
+            </div>
+
+            <div class="filter-section">
+                <button class="filter-btn active" onclick="filterProducts('all')">All Products</button>
+                <button class="filter-btn" onclick="filterProducts('cleanser')">Cleansers</button>
+                <button class="filter-btn" onclick="filterProducts('moisturizer')">Moisturizers</button>
+                <button class="filter-btn" onclick="filterProducts('serum')">Serums</button>
+                <button class="filter-btn" onclick="filterProducts('mask')">Masks</button>
+                <button class="filter-btn" onclick="filterProducts('sunscreen')">Sunscreens</button>
+            </div>
+
+            <h2>✨ Top 15 Recommended Products</h2>
+            <div class="products-grid" id="productsGrid">
+                {% for product in products %}
+                <div class="product-card" data-category="{{ product.category|default('general') }}">
+                    <div class="product-icon">
+                        {% if 'cleanser' in product.lower() or 'wash' in product.lower() %}
+                            🧼
+                        {% elif 'moisturizer' in product.lower() or 'cream' in product.lower() %}
+                            💧
+                        {% elif 'serum' in product.lower() or 'essence' in product.lower() %}
+                            ✨
+                        {% elif 'mask' in product.lower() %}
+                            🎭
+                        {% elif 'sunscreen' in product.lower() or 'spf' in product.lower() %}
+                            ☀️
+                        {% else %}
+                            🧴
+                        {% endif %}
+                    </div>
+                    <div class="product-number">Product #{{ loop.index }}</div>
+                    <div class="product-name">{{ product }}</div>
+                    <div class="product-description">
+                        {% if 'cleanser' in product.lower() or 'wash' in product.lower() %}
+                            Gentle formula perfect for {{ skin_type }} skin
+                        {% elif 'moisturizer' in product.lower() or 'cream' in product.lower() %}
+                            Provides optimal hydration for {{ skin_type }} skin
+                        {% elif 'serum' in product.lower() or 'essence' in product.lower() %}
+                            Targeted treatment for {{ skin_type }} skin concerns
+                        {% elif 'mask' in product.lower() %}
+                            Deep cleansing and nourishing mask
+                        {% elif 'sunscreen' in product.lower() or 'spf' in product.lower() %}
+                            Broad spectrum protection for {{ skin_type }} skin
+                        {% else %}
+                            Specially formulated for {{ skin_type }} skin type
+                        {% endif %}
+                    </div>
+                    <div class="product-links">
+                        <a href="https://www.google.com/search?q={{ product | urlencode }}+skincare+product" 
+                           target="_blank" 
+                           rel="noopener noreferrer"
+                           class="product-link google"
+                           onclick="trackClick('{{ product }}', 'Google')">
+                            🔍 Search on Google
+                        </a>
+                        <a href="https://www.amazon.in/s?k={{ product | urlencode }}+skincare&i=beauty&ref=nb_sb_noss" 
+                           target="_blank" 
+                           rel="noopener noreferrer"
+                           class="product-link amazon"
+                           onclick="trackClick('{{ product }}', 'Amazon')">
+                            🛒 Buy on Amazon India
+                        </a>
+                    </div>
+                </div>
+                {% endfor %}
+            </div>
+
+            <div class="button-group">
+                <a href="/suggestions" class="nav-button">💡 View Suggestions</a>
+                <a href="/routine" class="nav-button">📋 View Routine</a>
+                <a href="/data-explore" class="nav-button">📸 Upload New Image</a>
+            </div>
+
+            <div style="text-align: center;">
+                <a href="/data-explore" class="back-button">← Back to Analysis</a>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Product filtering function
+        function filterProducts(category) {
+            const products = document.querySelectorAll('.product-card');
+            const buttons = document.querySelectorAll('.filter-btn');
+            
+            // Update active button
+            buttons.forEach(btn => {
+                btn.classList.remove('active');
+            });
+            event.target.classList.add('active');
+            
+            // Filter products
+            products.forEach(product => {
+                const productName = product.querySelector('.product-name').textContent.toLowerCase();
+                let show = false;
+                
+                if (category === 'all') {
+                    show = true;
+                } else if (category === 'cleanser' && (productName.includes('cleanser') || productName.includes('wash') || productName.includes('face wash'))) {
+                    show = true;
+                } else if (category === 'moisturizer' && (productName.includes('moisturizer') || productName.includes('cream') || productName.includes('lotion'))) {
+                    show = true;
+                } else if (category === 'serum' && (productName.includes('serum') || productName.includes('essence') || productName.includes('treatment'))) {
+                    show = true;
+                } else if (category === 'mask' && (productName.includes('mask') || productName.includes('pack'))) {
+                    show = true;
+                } else if (category === 'sunscreen' && (productName.includes('sunscreen') || productName.includes('spf') || productName.includes('sun block'))) {
+                    show = true;
+                }
+                
+                if (show) {
+                    product.style.display = 'block';
+                } else {
+                    product.style.display = 'none';
+                }
+            });
+        }
+        
+        // Track product clicks for analytics
+        function trackClick(productName, platform) {
+            console.log(`🔍 Product clicked: ${productName} on ${platform}`);
+            // You can add more analytics tracking here if needed
+            // Example: send to Google Analytics or your own analytics endpoint
+        }
+        
+        // Add animation to product cards
+        const observerOptions = {
+            threshold: 0.1,
+            rootMargin: '0px 0px -50px 0px'
+        };
+        
+        const observer = new IntersectionObserver((entries) => {
+            entries.forEach(entry => {
+                if (entry.isIntersecting) {
+                    entry.target.style.opacity = '1';
+                    entry.target.style.transform = 'translateY(0)';
+                }
+            });
+        }, observerOptions);
+        
+        document.querySelectorAll('.product-card').forEach(card => {
+            card.style.opacity = '0';
+            card.style.transform = 'translateY(20px)';
+            card.style.transition = 'opacity 0.5s ease, transform 0.5s ease';
+            observer.observe(card);
+        });
+        
+        // Auto-hide flash messages
+        setTimeout(function() {
+            const flashes = document.querySelectorAll('.flash-message');
+            flashes.forEach(flash => {
+                flash.style.opacity = '0';
+                setTimeout(() => flash.remove(), 300);
+            });
+        }, 5000);
+        
+        // Add click tracking to all product links
+        document.querySelectorAll('.product-link').forEach(link => {
+            link.addEventListener('click', function(e) {
+                const productCard = this.closest('.product-card');
+                const productName = productCard.querySelector('.product-name').textContent;
+                const platform = this.classList.contains('google') ? 'Google' : 'Amazon';
+                console.log(`🛒 Opening ${platform} link for: ${productName}`);
+            });
+        });
+    </script>
+</body>
+</html>

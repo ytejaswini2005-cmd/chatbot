@@ -1,0 +1,942 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Prediction - DermaAI</title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600&family=Playfair+Display:wght@700&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --primary: #8E9775;
+            --accent: #E28E8E;
+            --bg: #FAF9F6;
+            --text: #333;
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Inter', sans-serif;
+            background-color: var(--bg);
+            color: var(--text);
+        }
+
+        nav {
+            background: white;
+            padding: 1rem 10%;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.05);
+            position: sticky;
+            top: 0;
+            z-index: 100;
+        }
+
+        .logo {
+            font-family: 'Playfair Display', serif;
+            font-size: 1.5rem;
+            color: var(--primary);
+            font-weight: bold;
+        }
+
+        .nav-links a {
+            margin-left: 20px;
+            text-decoration: none;
+            color: var(--text);
+            transition: color 0.3s;
+        }
+
+        .nav-links a:hover {
+            color: var(--primary);
+        }
+
+        .container {
+            padding: 60px 10%;
+            max-width: 1200px;
+            margin: 0 auto;
+        }
+
+        .prediction-card {
+            background: white;
+            padding: 40px;
+            border-radius: 20px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.05);
+        }
+
+        .upload-area {
+            border: 2px dashed #ccc;
+            border-radius: 10px;
+            padding: 40px;
+            text-align: center;
+            transition: border-color 0.3s;
+            cursor: pointer;
+            margin-bottom: 20px;
+        }
+
+        .upload-area:hover {
+            border-color: var(--primary);
+        }
+
+        .upload-area input {
+            display: none;
+        }
+
+        .preview-image {
+            max-width: 300px;
+            margin: 20px auto;
+            display: block;
+            border-radius: 10px;
+        }
+
+        .btn {
+            background-color: var(--primary);
+            color: white;
+            padding: 12px 30px;
+            border: none;
+            border-radius: 50px;
+            font-size: 16px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s;
+        }
+
+        .btn:hover {
+            background-color: #6d7559;
+            transform: translateY(-2px);
+        }
+
+        .result {
+            margin-top: 30px;
+            padding: 20px;
+            background: #f9f9f9;
+            border-radius: 10px;
+            animation: fadeIn 0.5s ease;
+        }
+
+        @keyframes fadeIn {
+            from {
+                opacity: 0;
+                transform: translateY(20px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        .skin-type, .condition-type {
+            font-size: 1.5rem;
+            font-weight: bold;
+            margin: 20px 0;
+            padding: 10px;
+            border-radius: 10px;
+        }
+
+        .skin-type {
+            background-color: #e8f5e9;
+            color: var(--primary);
+            border-left: 4px solid var(--primary);
+        }
+
+        .condition-type {
+            background-color: #fff3e0;
+            color: #e67e22;
+            border-left: 4px solid #e67e22;
+        }
+
+        .confidence {
+            font-size: 1rem;
+            color: #666;
+            margin: 10px 0;
+        }
+
+        .recommendations {
+            margin-top: 20px;
+        }
+
+        .recommendations h3 {
+            color: var(--primary);
+            margin: 20px 0 10px 0;
+        }
+
+        .recommendations ul {
+            list-style: none;
+            padding-left: 0;
+        }
+
+        .recommendations li {
+            padding: 8px 0;
+            padding-left: 25px;
+            position: relative;
+            line-height: 1.5;
+        }
+
+        .recommendations li:before {
+            content: "✓";
+            color: var(--primary);
+            position: absolute;
+            left: 0;
+            font-weight: bold;
+        }
+
+        .loading {
+            text-align: center;
+            padding: 20px;
+            display: none;
+        }
+
+        .spinner {
+            border: 3px solid #f3f3f3;
+            border-top: 3px solid var(--primary);
+            border-radius: 50%;
+            width: 40px;
+            height: 40px;
+            animation: spin 1s linear infinite;
+            margin: 0 auto 10px;
+        }
+
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+
+        .button-group {
+            display: flex;
+            gap: 15px;
+            justify-content: center;
+            margin-top: 25px;
+            flex-wrap: wrap;
+        }
+
+        .action-btn {
+            display: inline-block;
+            padding: 10px 20px;
+            background-color: var(--accent);
+            color: white;
+            text-decoration: none;
+            border-radius: 25px;
+            font-size: 0.9rem;
+            transition: all 0.3s;
+            cursor: pointer;
+            border: none;
+        }
+
+        .action-btn:hover {
+            background-color: #c97a7a;
+            transform: translateY(-2px);
+        }
+
+        .flash-messages {
+            position: fixed;
+            top: 20px;
+            right: 20px;
+            z-index: 1000;
+        }
+
+        .flash-message {
+            padding: 15px 25px;
+            margin-bottom: 10px;
+            border-radius: 8px;
+            animation: slideIn 0.3s ease-out;
+        }
+
+        .flash-success {
+            background-color: #d4edda;
+            color: #155724;
+            border: 1px solid #c3e6cb;
+        }
+
+        .flash-danger {
+            background-color: #f8d7da;
+            color: #721c24;
+            border: 1px solid #f5c6cb;
+        }
+
+        @keyframes slideIn {
+            from {
+                transform: translateX(100%);
+                opacity: 0;
+            }
+            to {
+                transform: translateX(0);
+                opacity: 1;
+            }
+        }
+
+        .category-tabs {
+            display: flex;
+            gap: 10px;
+            margin-bottom: 20px;
+            border-bottom: 2px solid #e0e0e0;
+        }
+
+        .tab-btn {
+            padding: 10px 20px;
+            background: none;
+            border: none;
+            cursor: pointer;
+            font-size: 1rem;
+            font-weight: 600;
+            color: #666;
+            transition: all 0.3s;
+        }
+
+        .tab-btn.active {
+            color: var(--primary);
+            border-bottom: 2px solid var(--primary);
+            margin-bottom: -2px;
+        }
+
+        .tab-btn:hover {
+            color: var(--primary);
+        }
+
+        @media (max-width: 768px) {
+            .container {
+                padding: 30px 5%;
+            }
+            
+            .prediction-card {
+                padding: 20px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <nav>
+        <div class="logo">DermaAI</div>
+        <div class="nav-links">
+            <a href="/dashboard">Dashboard</a>
+            <a href="/data-explore">Data Explore</a>
+            <a href="/prediction">Prediction</a>
+            <a href="/history">History</a>
+            <a href="/profile">Profile</a>
+            <a href="/logout">Logout</a>
+        </div>
+    </nav>
+
+    <div class="flash-messages">
+        {% with messages = get_flashed_messages(with_categories=true) %}
+            {% if messages %}
+                {% for category, message in messages %}
+                    <div class="flash-message flash-{{ category }}">
+                        {{ message }}
+                    </div>
+                {% endfor %}
+            {% endif %}
+        {% endwith %}
+    </div>
+
+    <div class="container">
+        <div class="prediction-card">
+            <h1 style="color: var(--primary); margin-bottom: 20px;">🔍 Skin Analysis & Prediction</h1>
+            <p>Upload a clear image of your skin to detect skin type or skin condition instantly.</p>
+            
+            <div class="category-tabs">
+                <button class="tab-btn active" onclick="switchTab('skin-type')">Skin Type Detection</button>
+                <button class="tab-btn" onclick="switchTab('skin-condition')">Skin Condition Detection</button>
+            </div>
+            
+            <form id="predictionForm" method="POST" enctype="multipart/form-data" style="margin-top: 20px;">
+                <div class="upload-area" onclick="document.getElementById('imageInput').click()">
+                    <input type="file" id="imageInput" name="image" accept="image/*" onchange="previewAndPredict(this)" required>
+                    <div id="uploadPrompt">
+                        <p>📸 Click to upload an image</p>
+                        <p style="font-size: 14px; color: #999;">PNG, JPG, JPEG accepted</p>
+                    </div>
+                    <img id="preview" class="preview-image" style="display: none;">
+                </div>
+                <div style="text-align: center;">
+                    <button type="button" class="btn" onclick="analyzeImage()">Analyze Image</button>
+                </div>
+            </form>
+
+            <div id="loading" class="loading">
+                <div class="spinner"></div>
+                <p>Analyzing your image...</p>
+            </div>
+
+            <div id="result" class="result" style="display: none;"></div>
+        </div>
+    </div>
+
+    <script>
+        // Database of skin types and conditions with their characteristics
+        const skinDatabase = {
+            // Skin Types
+            'oily': {
+                type: 'skin-type',
+                name: 'Oily Skin',
+                icon: '💧',
+                description: 'Oily skin produces excess sebum, leading to shine, enlarged pores, and potential breakouts.',
+                characteristics: ['shiny appearance', 'enlarged pores', 'prone to acne', 'greasy texture'],
+                confidence: 0,
+                recommendations: {
+                    routine: [
+                        "Use gentle foaming cleanser twice daily",
+                        "Apply oil-free, non-comedogenic moisturizer",
+                        "Use salicylic acid or benzoyl peroxide for acne",
+                        "Use clay masks 2-3 times a week",
+                        "Always use oil-free sunscreen"
+                    ],
+                    ingredients: [
+                        "Salicylic Acid",
+                        "Niacinamide",
+                        "Hyaluronic Acid",
+                        "Tea Tree Oil",
+                        "Retinoids"
+                    ],
+                    avoid: [
+                        "Heavy oils",
+                        "Alcohol-based products",
+                        "Heavy creams",
+                        "Comedogenic ingredients"
+                    ]
+                }
+            },
+            'dry': {
+                type: 'skin-type',
+                name: 'Dry Skin',
+                icon: '🏜️',
+                description: 'Dry skin lacks moisture, often feeling tight, flaky, and may show fine lines.',
+                characteristics: ['flaky patches', 'tight feeling', 'rough texture', 'fine lines'],
+                confidence: 0,
+                recommendations: {
+                    routine: [
+                        "Use cream or oil-based cleanser",
+                        "Apply rich moisturizer immediately",
+                        "Use hydrating serums with hyaluronic acid",
+                        "Apply overnight masks 2-3 times a week",
+                        "Use moisturizing sunscreen"
+                    ],
+                    ingredients: [
+                        "Hyaluronic Acid",
+                        "Ceramides",
+                        "Glycerin",
+                        "Shea Butter",
+                        "Squalane"
+                    ],
+                    avoid: [
+                        "Harsh foaming cleansers",
+                        "Alcohol",
+                        "Fragrance",
+                        "Excessive exfoliation"
+                    ]
+                }
+            },
+            'normal': {
+                type: 'skin-type',
+                name: 'Normal Skin',
+                icon: '✨',
+                description: 'Normal skin is well-balanced, not too oily or dry, with minimal imperfections.',
+                characteristics: ['balanced texture', 'small pores', 'even tone', 'minimal sensitivity'],
+                confidence: 0,
+                recommendations: {
+                    routine: [
+                        "Use gentle cleanser twice daily",
+                        "Apply lightweight moisturizer",
+                        "Exfoliate 1-2 times a week",
+                        "Always use sunscreen",
+                        "Maintain consistent routine"
+                    ],
+                    ingredients: [
+                        "Vitamin C",
+                        "Hyaluronic Acid",
+                        "Niacinamide",
+                        "Peptides",
+                        "Antioxidants"
+                    ],
+                    avoid: [
+                        "Harsh chemicals",
+                        "Over-exfoliation",
+                        "Heavy oils if not needed"
+                    ]
+                }
+            },
+            'combination': {
+                type: 'skin-type',
+                name: 'Combination Skin',
+                icon: '🔄',
+                description: 'Combination skin has both oily (typically T-zone) and dry areas.',
+                characteristics: ['oily T-zone', 'dry cheeks', 'enlarged pores on nose', 'varied texture'],
+                confidence: 0,
+                recommendations: {
+                    routine: [
+                        "Use gentle, balanced cleanser",
+                        "Apply lightweight moisturizer everywhere",
+                        "Use oil-control products on T-zone only",
+                        "Hydrate dry areas with richer products",
+                        "Use clay masks on T-zone"
+                    ],
+                    ingredients: [
+                        "Hyaluronic Acid",
+                        "Niacinamide",
+                        "Gentle exfoliants",
+                        "Ceramides",
+                        "Light oils like jojoba"
+                    ],
+                    avoid: [
+                        "One-size-fits-all products",
+                        "Harsh exfoliants on dry areas",
+                        "Heavy creams on oily areas"
+                    ]
+                }
+            },
+            
+            // Skin Conditions
+            'acne': {
+                type: 'skin-condition',
+                name: 'Acne',
+                icon: '🔴',
+                description: 'Acne is characterized by pimples, blackheads, whiteheads, and inflamed lesions.',
+                characteristics: ['pimples', 'blackheads', 'whiteheads', 'red bumps', 'inflammation'],
+                confidence: 0,
+                recommendations: {
+                    routine: [
+                        "Use non-comedogenic products",
+                        "Cleanse twice daily with acne-fighting cleanser",
+                        "Never pop pimples",
+                        "Use salicylic acid or benzoyl peroxide",
+                        "Change pillowcases frequently"
+                    ],
+                    products: [
+                        "CeraVe Acne Foaming Cleanser",
+                        "The Ordinary Salicylic Acid 2%",
+                        "Paula\'s Choice Clear Acne Kit",
+                        "COSRX Acne Pimple Patch",
+                        "Differin Adapalene Gel"
+                    ],
+                    doctors_routine: [
+                        "Consult dermatologist for severe cases",
+                        "Consider prescription retinoids",
+                        "Professional chemical peels",
+                        "Light therapy treatments",
+                        "Oral medications if needed"
+                    ]
+                }
+            },
+            'eczema': {
+                type: 'skin-condition',
+                name: 'Eczema',
+                icon: '🔥',
+                description: 'Eczema causes dry, itchy, and inflamed skin patches.',
+                characteristics: ['dry patches', 'intense itching', 'redness', 'rough skin', 'flaking'],
+                confidence: 0,
+                recommendations: {
+                    routine: [
+                        "Use fragrance-free products",
+                        "Apply moisturizer immediately after bathing",
+                        "Take lukewarm showers",
+                        "Use humidifier",
+                        "Wear soft cotton fabrics"
+                    ],
+                    products: [
+                        "CeraVe Healing Ointment",
+                        "La Roche-Posay Lipikar Balm",
+                        "Aveeno Eczema Therapy Cream",
+                        "Vanicream Moisturizing Cream",
+                        "Cetaphil Restoraderm"
+                    ],
+                    doctors_routine: [
+                        "Topical corticosteroids for flare-ups",
+                        "Prescription antihistamines",
+                        "Phototherapy for severe cases",
+                        "Allergy testing",
+                        "Biologic medications if needed"
+                    ]
+                }
+            },
+            'carcinoma': {
+                type: 'skin-condition',
+                name: 'Carcinoma',
+                icon: '⚠️',
+                description: 'Carcinoma is a form of skin cancer that requires immediate medical attention.',
+                characteristics: ['unusual growth', 'changing mole', 'bleeding spot', 'scaly patch', 'non-healing sore'],
+                confidence: 0,
+                recommendations: {
+                    routine: [
+                        "IMMEDIATELY CONSULT A DERMATOLOGIST",
+                        "Do not touch or irritate the area",
+                        "Protect skin from sun exposure",
+                        "Document changes with photos",
+                        "Avoid any home treatments"
+                    ],
+                    products: [
+                        "Seek professional medical treatment only",
+                        "Use medical-grade sunscreen",
+                        "Protective clothing",
+                        "Prescribed medications only",
+                        "Follow doctor's instructions"
+                    ],
+                    doctors_routine: [
+                        "URGENT: Schedule dermatologist appointment",
+                        "Biopsy for diagnosis",
+                        "Mohs surgery if needed",
+                        "Regular skin cancer screenings",
+                        "Follow-up appointments as scheduled"
+                    ]
+                }
+            },
+            'keratosis': {
+                type: 'skin-condition',
+                name: 'Keratosis',
+                icon: '🔘',
+                description: 'Keratosis causes rough, scaly patches on the skin.',
+                characteristics: ['rough patches', 'scaly texture', 'flesh-colored bumps', 'dry spots', 'wart-like appearance'],
+                confidence: 0,
+                recommendations: {
+                    routine: [
+                        "Use gentle exfoliation",
+                        "Apply moisturizers regularly",
+                        "Avoid picking at patches",
+                        "Use sunscreen daily",
+                        "Consider professional treatment"
+                    ],
+                    products: [
+                        "CeraVe SA Cream",
+                        "AmLactin Moisturizing Lotion",
+                        "Urea-based creams",
+                        "Gentle physical exfoliants",
+                        "Hydrating serums"
+                    ],
+                    doctors_routine: [
+                        "Consult dermatologist for diagnosis",
+                        "Cryotherapy for removal",
+                        "Topical prescription creams",
+                        "Laser treatments",
+                        "Regular monitoring"
+                    ]
+                }
+            },
+            'milia': {
+                type: 'skin-condition',
+                name: 'Milia',
+                icon: '⚪',
+                description: 'Milia are small, white bumps that appear on the skin, often around the eyes.',
+                characteristics: ['tiny white bumps', 'small cysts', 'clustered appearance', 'smooth texture', 'common around eyes'],
+                confidence: 0,
+                recommendations: {
+                    routine: [
+                        "Use gentle exfoliation",
+                        "Avoid heavy eye creams",
+                        "Keep skin clean",
+                        "Use non-comedogenic products",
+                        "Don't try to pop milia"
+                    ],
+                    products: [
+                        "CeraVe SA Cleanser",
+                        "The Ordinary Glycolic Acid",
+                        "Retinol serums",
+                        "Gentle physical scrubs",
+                        "Lightweight moisturizers"
+                    ],
+                    doctors_routine: [
+                        "Professional extraction by dermatologist",
+                        "Chemical peels for treatment",
+                        "Microdermabrasion",
+                        "Prescription retinoids",
+                        "Laser treatments for persistent cases"
+                    ]
+                }
+            },
+            'rosacea': {
+                type: 'skin-condition',
+                name: 'Rosacea',
+                icon: '🌹',
+                description: 'Rosacea causes facial redness, visible blood vessels, and sometimes bumps.',
+                characteristics: ['facial redness', 'visible blood vessels', 'flushing', 'red bumps', 'sensitive skin'],
+                confidence: 0,
+                recommendations: {
+                    routine: [
+                        "Use gentle, fragrance-free products",
+                        "Avoid triggers like spicy food and alcohol",
+                        "Use mineral sunscreen daily",
+                        "Protect skin from extreme temperatures",
+                        "Use soothing, anti-inflammatory ingredients"
+                    ],
+                    products: [
+                        "La Roche-Posay Rosaliac AR",
+                        "Avene Antirougeurs Cream",
+                        "Cetaphil Redness Relief",
+                        "Dr. Jart+ Cicapair Cream",
+                        "Eau Thermale Avene Thermal Spring Water"
+                    ],
+                    doctors_routine: [
+                        "Prescription topical medications",
+                        "Oral antibiotics for inflammation",
+                        "Laser therapy for visible vessels",
+                        "IPL treatments",
+                        "Identify and avoid triggers"
+                    ]
+                }
+            }
+        };
+
+        let currentTab = 'skin-type';
+        let currentPrediction = null;
+
+        function switchTab(tab) {
+            currentTab = tab;
+            document.querySelectorAll('.tab-btn').forEach(btn => {
+                btn.classList.remove('active');
+            });
+            event.target.classList.add('active');
+            
+            // Clear previous results
+            document.getElementById('result').style.display = 'none';
+            document.getElementById('preview').style.display = 'none';
+            document.getElementById('uploadPrompt').style.display = 'block';
+            document.getElementById('imageInput').value = '';
+        }
+
+        function previewAndPredict(input) {
+            const preview = document.getElementById('preview');
+            const prompt = document.getElementById('uploadPrompt');
+            
+            if (input.files && input.files[0]) {
+                const reader = new FileReader();
+                
+                reader.onload = function(e) {
+                    preview.src = e.target.result;
+                    preview.style.display = 'block';
+                    prompt.style.display = 'none';
+                }
+                
+                reader.readAsDataURL(input.files[0]);
+            }
+        }
+
+        function analyzeImage() {
+            const imageInput = document.getElementById('imageInput');
+            if (!imageInput.files || !imageInput.files[0]) {
+                showFlashMessage('Please select an image first!', 'danger');
+                return;
+            }
+            
+            const loadingDiv = document.getElementById('loading');
+            const resultDiv = document.getElementById('result');
+            
+            loadingDiv.style.display = 'block';
+            resultDiv.style.display = 'none';
+            
+            // Simulate image analysis (in real implementation, this would call your ML model)
+            setTimeout(() => {
+                const imageFile = imageInput.files[0];
+                const fileName = imageFile.name.toLowerCase();
+                
+                // Determine prediction based on filename and current tab
+                let prediction = determinePrediction(fileName);
+                
+                if (prediction) {
+                    displayResult(prediction);
+                    // Store in session for navigation
+                    storePrediction(prediction);
+                } else {
+                    showFlashMessage('Could not determine skin condition. Please try another image.', 'danger');
+                }
+                
+                loadingDiv.style.display = 'none';
+            }, 2000);
+        }
+        
+        function determinePrediction(fileName) {
+            // Keywords for different skin types and conditions
+            const keywords = {
+                'oily': ['oily', 'shine', 'greasy'],
+                'dry': ['dry', 'flaky', 'rough'],
+                'normal': ['normal', 'balanced'],
+                'combination': ['combination', 'combo', 't-zone'],
+                'acne': ['acne', 'pimple', 'zit', 'breakout'],
+                'eczema': ['eczema', 'dermatitis', 'rash'],
+                'carcinoma': ['carcinoma', 'cancer', 'malignant'],
+                'keratosis': ['keratosis', 'keratin'],
+                'milia': ['milia', 'white bump'],
+                'rosacea': ['rosacea', 'redness']
+            };
+            
+            // Check based on current tab
+            if (currentTab === 'skin-type') {
+                const skinTypes = ['oily', 'dry', 'normal', 'combination'];
+                for (let type of skinTypes) {
+                    if (keywords[type].some(keyword => fileName.includes(keyword))) {
+                        return skinDatabase[type];
+                    }
+                }
+                // Default to normal if no match
+                return skinDatabase['normal'];
+            } else {
+                const conditions = ['acne', 'eczema', 'carcinoma', 'keratosis', 'milia', 'rosacea'];
+                for (let condition of conditions) {
+                    if (keywords[condition].some(keyword => fileName.includes(keyword))) {
+                        return skinDatabase[condition];
+                    }
+                }
+                // Default to acne if no match in condition tab
+                return skinDatabase['acne'];
+            }
+        }
+        
+        function displayResult(prediction) {
+            const resultDiv = document.getElementById('result');
+            const confidence = Math.floor(Math.random() * 20) + 80; // Simulated confidence
+            
+            const isSkinType = prediction.type === 'skin-type';
+            const typeClass = isSkinType ? 'skin-type' : 'condition-type';
+            const typeLabel = isSkinType ? 'Skin Type' : 'Condition';
+            
+            let html = `
+                <h2>🔍 Analysis Result</h2>
+                <div class="${typeClass}">
+                    ${prediction.icon} ${typeLabel}: ${prediction.name}
+                </div>
+                <div class="confidence">
+                    Confidence: ${confidence}%
+                </div>
+                <p style="margin: 15px 0;">${prediction.description}</p>
+                
+                <div class="recommendations">
+                    <h3>📋 Recommended Skincare Routine</h3>
+                    <ul>
+                        ${prediction.recommendations.routine.map(step => `<li>${step}</li>`).join('')}
+                    </ul>
+                    
+                    <h3>✨ Recommended Products</h3>
+                    <ul>
+                        ${prediction.recommendations.products ? 
+                            prediction.recommendations.products.map(product => `<li>${product}</li>`).join('') : 
+                            prediction.recommendations.ingredients.map(ing => `<li>${ing}</li>`).join('')}
+                    </ul>
+            `;
+            
+            // Add doctor's routine if available
+            if (prediction.recommendations.doctors_routine) {
+                html += `
+                    <h3>👨‍⚕️ Doctor's Recommendations</h3>
+                    <ul>
+                        ${prediction.recommendations.doctors_routine.map(step => `<li>${step}</li>`).join('')}
+                    </ul>
+                `;
+            }
+            
+            // Add ingredients to avoid if available
+            if (prediction.recommendations.avoid) {
+                html += `
+                    <h3>⚠️ Ingredients to Avoid</h3>
+                    <ul>
+                        ${prediction.recommendations.avoid.map(item => `<li>${item}</li>`).join('')}
+                    </ul>
+                `;
+            }
+            
+            // Add buttons for more details
+            if (isSkinType) {
+                html += `
+                    <div class="button-group">
+                        
+                    </div>
+                `;
+            } else {
+                html += `
+                    <div class="button-group">
+                       
+                    </div>
+                `;
+            }
+            
+            html += `</div>`;
+            
+            resultDiv.innerHTML = html;
+            resultDiv.style.display = 'block';
+            
+            // Scroll to result
+            resultDiv.scrollIntoView({ behavior: 'smooth', block: 'start' });
+        }
+        
+        function storePrediction(prediction) {
+            currentPrediction = prediction;
+            // Store in localStorage for navigation
+            localStorage.setItem('currentPrediction', JSON.stringify(prediction));
+        }
+        
+        function viewProducts() {
+            if (currentPrediction) {
+                localStorage.setItem('viewType', 'products');
+                window.location.href = '/products-view';
+            }
+        }
+        
+        function viewRoutine() {
+            if (currentPrediction) {
+                localStorage.setItem('viewType', 'routine');
+                window.location.href = '/routine-view';
+            }
+        }
+        
+        function viewDoctorsRoutine() {
+            if (currentPrediction) {
+                localStorage.setItem('viewType', 'doctors-routine');
+                window.location.href = '/doctors-routine-view';
+            }
+        }
+        
+        function viewConditionProducts() {
+            if (currentPrediction) {
+                localStorage.setItem('viewType', 'condition-products');
+                window.location.href = '/condition-products-view';
+            }
+        }
+        
+        function viewConditionRoutine() {
+            if (currentPrediction) {
+                localStorage.setItem('viewType', 'condition-routine');
+                window.location.href = '/condition-routine-view';
+            }
+        }
+        
+        function viewFoodIntake() {
+            if (currentPrediction) {
+                localStorage.setItem('viewType', 'food-intake');
+                window.location.href = '/food-intake-view';
+            }
+        }
+        
+        function showFlashMessage(message, type) {
+            const flashDiv = document.createElement('div');
+            flashDiv.className = `flash-message flash-${type}`;
+            flashDiv.textContent = message;
+            document.querySelector('.flash-messages').appendChild(flashDiv);
+            
+            setTimeout(() => {
+                flashDiv.style.opacity = '0';
+                setTimeout(() => flashDiv.remove(), 300);
+            }, 5000);
+        }
+        
+        // Auto-hide flash messages
+        setTimeout(function() {
+            const flashes = document.querySelectorAll('.flash-message');
+            flashes.forEach(flash => {
+                flash.style.opacity = '0';
+                setTimeout(() => flash.remove(), 300);
+            });
+        }, 5000);
+        
+        // Function to simulate ML model prediction (for demo purposes)
+        function simulatePrediction(imageElement) {
+            // In a real implementation, you would:
+            // 1. Convert image to base64
+            // 2. Send to your backend ML model
+            // 3. Receive prediction results
+            // 4. Display results
+            
+            // For now, we're using filename-based detection
+            return null;
+        }
+    </script>
+</body>
+</html>
